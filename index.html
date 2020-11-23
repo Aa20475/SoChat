@@ -62,7 +62,11 @@
       });
 
       socket.on('chat message', function(msg){
-        $('#messages').append($('<li>').text(msg));
+        $('#messages').append($('<li>').append(
+          $('<b>').text(msg['user']+": ")
+        ).append(
+          $('<i>').text(msg['msg'])
+        ))
       });
     });
   </script>
