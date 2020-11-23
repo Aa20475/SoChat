@@ -26,14 +26,16 @@
   <script>
     $(function () {
       
+      //initialise socket
+      var socket = io();
+
       // Username
       var foo = null
       while(!foo)[
         foo = prompt("Username: ")
       ]
 
-      //initialise socket
-      var socket = io();
+      socket.emit('username',foo);
 
       // Signalling
       $('form').submit(function(e){
@@ -43,8 +45,6 @@
         return false;
       });
       
-      socket.emit('username',foo);
-
 
       // Signal Handling
       socket.on('username', function(msg){
