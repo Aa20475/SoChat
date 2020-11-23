@@ -14,7 +14,9 @@
     </style>
   </head>
   <body>
-    <ul id="messages"></ul>
+    <div id="out" style="overflow-y:auto">
+        <ul id="messages"></ul>
+    </div>
     <form action="">
       <input id="m" autocomplete="off" /><button>Send</button>
     </form>
@@ -23,13 +25,42 @@
   <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
   <script>
     $(function () {
+      
+      // Username
+      var foo = null
+      while(!foo)[
+        foo = prompt("Username: ")
+      ]
+
+      //initialise socket
       var socket = io();
+
+      // Signalling
       $('form').submit(function(e){
         e.preventDefault(); // prevents page reloading
         socket.emit('chat message', $('#m').val());
         $('#m').val('');
         return false;
       });
+      
+      socket.emit('username',foo);
+
+
+      // Signal Handling
+      socket.on('username', function(msg){
+        $('#messages').append(
+          $('<li>').append(
+            $('<i>').text(msg + " joined the chat!")
+          ))
+      });
+
+      socket.on('userleft', function(msg){
+        $('#messages').append(
+          $('<li>').append(
+            $('<i>').text(msg)
+          ))
+      });
+
       socket.on('chat message', function(msg){
         $('#messages').append($('<li>').text(msg));
       });
