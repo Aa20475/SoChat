@@ -5,19 +5,27 @@ var io = require('socket.io')(http);
 
 app.use(express.static(__dirname + '/static'));
 
-
-
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
 
 var users = {}
-var chatHistory = {}
+var privchats = {}
 
 io.on('connection', (socket) => {
 
   socket.on('chat message', (msg) => {
-    io.emit('chat message', {'user':users[socket.id],'msg':msg});
+    if(msg["group"]=="home"){
+      io.emit('chat message', {'user':users[socket.id],'msg':msg});
+    }else{
+      for(const [key, value] of Object.entries(users)){
+        if(value===msg['group']){
+          io.to(key).emit('chat message', {'user':users[socket.id],'msg':{"group":users[socket.id],"msg":msg["msg"]}});
+          break;
+        }
+      }
+      io.to(socket.id).emit('chat message', {'user':users[socket.id],'msg':msg});
+    }
   });
 
   socket.on('username',(msg)=>{
@@ -39,9 +47,28 @@ io.on('connection', (socket) => {
     delete users[socket.id]
   });
 
+  socket.on('chatstart', (msg)=>{
+    console.log(users[socket.id]+" started chat with "+msg);
+    for(const [key, value] of Object.entries(users)){
+      if(value===msg){
+        io.to(key).emit("chatstart",users[socket.id]);
+        break;
+      }
+    }
+  })
+
+  socket.on('chatend', (msg)=>{
+    console.log(users[socket.id]+" ended chat with "+msg);
+    for(const [key, value] of Object.entries(users)){
+      if(value===msg){
+        io.to(key).emit("chatend",users[socket.id]);
+        break;
+      }
+    }
+  })
 
 });
 
-http.listen(3000,"192.168.1.3", () => {
+http.listen(3000, () => {
   console.log('listening on *:3000');
 });
