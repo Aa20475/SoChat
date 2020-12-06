@@ -9,6 +9,11 @@ $(function () {
     ]
     $("#dropdownMenuButton").html(foo)
     socket.emit('username',foo);
+    if (Notification.permission !== "denied") {
+       Notification.requestPermission().then(permission => {
+          console.log(permission);
+       });
+    }
 
     // Signalling
     $('form').submit(function(e){
@@ -51,10 +56,12 @@ $(function () {
     });
 
     socket.on('chat message', function(msg){
+      const notif = new Notification(msg['user']+": "+msg['msg']);
       $('#messages').prepend($('<li>').addClass("list-group-item").append(
         $('<b>').text(msg['user']+": ")
       ).append(
         $('<i>').text(msg['msg'])
       ))
+      if(msg['user']!==foo){notif();}
     });
   });
